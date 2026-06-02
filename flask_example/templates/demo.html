@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="content-section mt-3">
+  <!-- h2: sub-heading, smaller than h1 -->
+  <h2>Algorithm Demo</h2>
+  <!-- text-muted: Bootstrap class that makes text grey/subtle -->
+  <p class="text-muted">Enter the budgeting scenario below, or use the random-fill tool to generate an example instantly.</p>
+
+  <!-- ── Random Fill ── -->
+  <!-- card: Bootstrap component that groups content in a styled box with header and body -->
+  <!-- mb-4: margin-bottom spacing from Bootstrap -->
+  <div class="card mb-4">
+    <!-- card-header: the top bar of the card | bg-secondary: grey background | text-white: white text -->
+    <div class="card-header bg-secondary text-white">
+      <strong>Quick Fill — Generate Random Input</strong>
+    </div>
+    <!-- card-body: the inner content area of the card, adds padding automatically -->
+    <div class="card-body">
+      <!-- separate form just for the random-fill button — submits to the same route -->
+      <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <!-- form-row: Bootstrap layout that places fields side by side in a row -->
+        <!-- align-items-end: vertically aligns all fields to the bottom of the row -->
+        <div class="form-row align-items-end">
+          <!-- col-auto: column that sizes itself to fit its content -->
+          <div class="col-auto">
+            {{ form.rand_voters.label(class="col-form-label") }}
+            {{ form.rand_voters(class="form-control", style="width:90px", placeholder="e.g. 4") }}
+          </div>
+          <div class="col-auto">
+            {{ form.rand_projects.label(class="col-form-label") }}
+            {{ form.rand_projects(class="form-control", style="width:90px", placeholder="e.g. 3") }}
+          </div>
+          <div class="col-auto mt-2">
+            {{ form.rand_fill(class="btn btn-secondary") }}
+          </div>
+        </div>
+        <p class="hint mt-2">
+          Enter the desired number of voters and projects, then click <em>Fill with Random Data</em>.
+          The main form below will be filled automatically.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Main Input Form ── -->
+  <form method="POST" action="">
+    {{ form.hidden_tag() }}
+
+    <!-- form-group: Bootstrap wrapper that adds spacing between form fields -->
+    <div class="form-group">
+      <!-- font-weight-bold: makes the label text bold -->
+      {{ form.budget.label(class="font-weight-bold") }}
+      <!-- if the field has validation errors, add is-invalid to show a red border -->
+      {% if form.budget.errors %}
+        {{ form.budget(class="form-control is-invalid", placeholder="e.g. 20000") }}
+        <!-- loop over each error message and display it in red below the field -->
+        {% for e in form.budget.errors %}
+          <!-- invalid-feedback: Bootstrap class that shows error text in red -->
+          <div class="invalid-feedback">{{ e }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.budget(class="form-control", placeholder="e.g. 20000") }}
+      {% endif %}
+      <p class="hint">Total available budget (positive integer).</p>
+    </div>
+
+    <div class="form-group">
+      {{ form.projects.label(class="font-weight-bold") }}
+      {% if form.projects.errors %}
+        <!-- rows=5: sets the visible height of the textarea to 5 lines -->
+        {{ form.projects(class="form-control is-invalid", rows=5,
+            placeholder="Park: 10000\nLibrary: 15000\nRoads: 5000") }}
+        {% for e in form.projects.errors %}
+          <div class="invalid-feedback">{{ e }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.projects(class="form-control", rows=5,
+            placeholder="Park: 10000\nLibrary: 15000\nRoads: 5000") }}
+      {% endif %}
+      <p class="hint">
+        <!-- code: displays text in monospace font to highlight expected format -->
+        One project per line in the format <code>ProjectName: cost</code>.<br>
+        Project names must not contain commas. Costs are positive integers.
+      </p>
+    </div>
+
+    <div class="form-group">
+      {{ form.preferences.label(class="font-weight-bold") }}
+      {% if form.preferences.errors %}
+        {{ form.preferences(class="form-control is-invalid", rows=6,
+            placeholder="Alice: Park, Library\nBob: Park, Roads\nCarol: Library") }}
+        {% for e in form.preferences.errors %}
+          <div class="invalid-feedback">{{ e }}</div>
+        {% endfor %}
+      {% else %}
+        {{ form.preferences(class="form-control", rows=6,
+            placeholder="Alice: Park, Library\nBob: Park, Roads\nCarol: Library") }}
+      {% endif %}
+      <p class="hint">
+        One voter per line in the format <code>VoterName: proj1, proj2, ...</code>.<br>
+        Project names must match exactly those listed in the Projects field above.
+        A voter with no approved projects can be omitted or left with an empty list after the colon.
+      </p>
+    </div>
+
+    <div class="form-group">
+      {{ form.algorithm.label(class="font-weight-bold") }}
+      <!-- SelectField renders as a <select> dropdown — choices come from forms.py -->
+      {{ form.algorithm(class="form-control") }}
+      <p class="hint">
+        <strong>BW-GCR-PB</strong> uses the Greedy Cohesive Rule backbone and guarantees <em>FJR</em>.
+        <!-- text-warning: Bootstrap orange/yellow color to draw attention -->
+        <span class="text-warning font-weight-bold">Limited to 10 projects</span> — runtime grows exponentially beyond that.<br>
+        <strong>BW-MES-PB</strong> uses the Method of Equal Shares backbone and guarantees <em>EJR</em>. Supports any number of projects.
+      </p>
+    </div>
+
+    <!-- btn-primary: blue Bootstrap button | btn-lg: large size -->
+    {{ form.submit(class="btn btn-primary btn-lg") }}
+  </form>
+</div>
+
+{% endblock %}

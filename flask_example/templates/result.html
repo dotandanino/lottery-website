@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="content-section mt-3">
+  <h2>Results</h2>
+
+  <!-- ── Input Summary (shown once) ── -->
+  <h4>Input</h4>
+  <table class="table table-sm table-bordered w-auto">
+    <thead class="prob-table">
+      <tr><th>Project</th><th>Cost</th></tr>
+    </thead>
+    <tbody>
+      {% for name, cost in projects_costs.items() %}
+      <tr><td>{{ name }}</td><td>{{ cost }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><strong>Budget:</strong> {{ budget }}</p>
+
+  <h5>Voter Preferences</h5>
+  <table class="table table-sm table-bordered">
+    <thead class="prob-table">
+      <tr>
+        <th>Voter</th>
+        {% for pname in projects_costs.keys() %}
+          <th>{{ pname }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for voter, ballot in preferences.items() %}
+      <tr>
+        <td><strong>{{ voter }}</strong></td>
+        {% for pname in projects_costs.keys() %}
+          <td>{% if ballot[pname] == 1 %}✔{% else %}–{% endif %}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr>
+
+  <!-- ── Algorithm Output ── -->
+  <h4>Output</h4>
+
+  {% if runs|length > 1 %}
+  <div class="alert alert-info">
+    Showing both algorithms side by side. Scroll right if columns are not visible.
+  </div>
+  {% endif %}
+
+  <!-- columns: one per algorithm run -->
+  <div class="row flex-nowrap" style="overflow-x: auto;">
+    {% for run in runs %}
+    <div class="{% if runs|length == 1 %}col-12{% else %}col-6{% endif %}" style="min-width: 340px;">
+
+      <div class="content-section">
+        <h5 class="text-primary border-bottom pb-2">{{ run.algo_label }}</h5>
+
+        <h6>Probability Vector</h6>
+        <p class="hint">Each project's probability of being funded in the lottery.</p>
+        <table class="table table-sm table-bordered prob-table w-auto">
+          <thead>
+            <tr><th>Project</th><th>Probability</th></tr>
+          </thead>
+          <tbody>
+            {% for pname, prob in run.prob_pairs %}
+            <tr>
+              <td>{{ pname }}</td>
+              <td>{{ "%.4f"|format(prob) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h6>Selected Projects (after BB1 Rounding)</h6>
+        {% if run.selected %}
+          {% for pname in run.selected %}
+            <span class="selected-badge">{{ pname }}</span>
+          {% endfor %}
+          <p class="mt-2">
+            <strong>Total cost:</strong>
+            {{ run.projects_costs.items() | selectattr('0', 'in', run.selected) | map(attribute='1') | sum }}
+            / {{ budget }}
+          </p>
+        {% else %}
+          <p class="text-muted">No projects selected (budget may be too tight).</p>
+        {% endif %}
+
+        <h6 class="mt-3">Fairness Guarantee</h6>
+        <div class="guarantee-box">
+          <strong>{{ run.guarantee }}</strong><br>
+          {% if 'FJR' in run.guarantee %}
+            Every sufficiently large cohesive group receives utility proportional to their size.
+            BW-GCR-PB satisfies FJR in expectation.
+          {% else %}
+            Every voter in a sufficiently large cohesive group receives at least one approved project
+            in expectation. BW-MES-PB satisfies EJR in expectation.
+          {% endif %}
+        </div>
+
+        <h6 class="mt-3">Per-Voter Satisfaction</h6>
+        <table class="table table-sm table-bordered">
+          <thead class="prob-table">
+            <tr><th>Voter</th><th>Approved</th><th>Got Funded</th><th>Score</th></tr>
+          </thead>
+          <tbody>
+            {% for voter, ballot in run.preferences.items() %}
+              {% set approved = [] %}
+              {% for pname, v in ballot.items() %}{% if v == 1 %}{% set _ = approved.append(pname) %}{% endif %}{% endfor %}
+              {% set funded = run.satisfactions[voter] %}
+            <tr>
+              <td><strong>{{ voter }}</strong></td>
+              <td>{{ approved | join(', ') or '—' }}</td>
+              <td>{{ funded | join(', ') or '—' }}</td>
+              <td>
+                {% if funded %}
+                  <span class="satisfaction-ok">{{ funded|length }} / {{ approved|length }}</span>
+                {% else %}
+                  <span class="satisfaction-none">0 / {{ approved|length }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <hr>
+
+  <p>
+    <a href="{{ url_for('logs') }}" target="_blank" class="btn btn-outline-secondary btn-sm logs-link">View Algorithm Logs</a>
+    &nbsp;
+    <a href="{{ url_for('demo') }}" class="btn btn-outline-primary btn-sm">Run Another Example</a>
+  </p>
+</div>
+
+{% endblock %}

@@ -1,0 +1,4 @@
+flask
+flask-wtf
+wtforms
+pabutools @ git+https://github.com/dotandanino/pabutools

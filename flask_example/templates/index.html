@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+<!-- block content: the unique content of this page, injected into the layout -->
+{% block content %}
+
+<!-- div: a container/box for elements. class sets styling from CSS -->
+<!-- hero: blue banner styling defined in main.css | mt-3: small margin-top from Bootstrap -->
+<div class="hero mt-3">
+  <h1>Fair Lotteries for Participatory Budgeting</h1>
+  <!-- p: a regular paragraph -->
+  <p>An interactive demo of the ballot-weighted lottery algorithms from the paper:<br>
+     <!-- br: line break inside a paragraph -->
+     <!-- strong: bold text -->
+     <!-- &amp; = the & character in HTML (must be written this way so the browser doesn't misread it) -->
+     <strong>Aziz, Lu, Suzuki, Vollen &amp; Walsh — AAAI 2024</strong>
+  </p>
+  <!-- a: a link. href = destination URL. target="_blank" = open in a new tab -->
+  <!-- btn btn-light mr-2: Bootstrap button in light color with right margin from the css-->
+  <a href="https://ojs.aaai.org/index.php/AAAI/article/view/28801"
+     target="_blank" class="btn btn-light mr-2">Read the Paper</a>
+  <!-- url_for: Jinja2 — automatically generates the URL for the route named 'demo' -->
+  <a href="{{ url_for('demo') }}" class="btn btn-success">Try the Demo</a>
+</div>
+
+<!-- content-section: white box with border styling defined in main.css -->
+<div class="content-section">
+  <h3>What is Participatory Budgeting?</h3>
+  <p>
+    Participatory budgeting (PB) is a democratic process in which citizens vote on how a public budget should be
+    spent across a set of projects (e.g., a park, a library, road repairs). Each voter
+    <!-- em: italic — highlights a word in a subtle way -->
+    <em>approves</em> a subset
+    of projects, and an algorithm selects a feasible subset that fits within the budget.
+  </p>
+
+  <h3>What do the algorithms do?</h3>
+  <p>
+    Standard PB rules are <strong>deterministic</strong> — they always pick the same outcome, which may be unfair
+    to minority voters. This paper introduces <strong>lottery-based</strong> rules that output a
+    <em>probability distribution</em> over feasible outcomes, then use dependent rounding (BB1) to pick a single
+    discrete outcome. Two algorithms are provided:
+  </p>
+  <!-- ul: unordered list — order does not matter -->
+  <ul>
+    <!-- li: a single list item -->
+    <li>
+      <strong>BW-GCR-PB</strong> — uses the Greedy Cohesive Rule as its backbone.<br>
+      <em>Guarantee:</em> Full Justified Representation (<strong>FJR</strong>).<br>
+      <em>Run Time:</em> Exponential.
+
+    </li>
+    <li>
+      <strong>BW-MES-PB</strong> — uses the Method of Equal Shares as its backbone.<br>
+      <em>Guarantee:</em> Extended Justified Representation (<strong>EJR</strong>).<br>
+      <em>Run Time:</em> Polinomial.
+    </li>
+  </ul>
+  <p>
+    Both guarantees ensure that every cohesive group of voters gets a fair share of the
+    budget outcome proportional to their size and both also ensure strong UFS property.
+  </p>
+
+  <h3>How to use the demo</h3>
+  <!-- ol: numbered list (ordered list) — 1, 2, 3... -->
+  <ol>
+    <li>Go to <a href="{{ url_for('demo') }}">Demo</a>.</li>
+    <li>Enter a budget, a list of projects with costs, and voter preferences — or click <em>Fill with Random Data</em>.</li>
+    <li>Choose an algorithm and click <em>Run Algorithm</em>.</li>
+    <li>See the selected projects, probability vector, and fairness guarantees on the result page.</li>
+  </ol>
+</div>
+
+{% endblock %}
