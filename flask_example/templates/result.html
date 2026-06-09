@@ -4,34 +4,53 @@
 <div class="content-section mt-3">
   <h2>Results</h2>
 
-  <!-- ── Input Summary (shown once) ── -->
+  <!-- ── Input Summary (shown once, above the algorithm columns) ── -->
   <h4>Input</h4>
+
+  <!-- Table 1: Project costs
+       table        — base Bootstrap table style
+       table-sm     — smaller row padding (more compact)
+       table-bordered — draws borders around every cell
+       w-auto       — shrinks the table to fit its content instead of stretching full width -->
   <table class="table table-sm table-bordered w-auto">
+    <!-- thead: the header row section of the table -->
     <thead class="prob-table">
+      <!-- tr: table row | th: table header cell (bold by default) -->
       <tr><th>Project</th><th>Cost</th></tr>
     </thead>
+    <!-- tbody: the body section — contains all data rows -->
     <tbody>
+      <!-- Loop over every project and create one row per project -->
       {% for name, cost in projects_costs.items() %}
+      <!-- td: regular table data cell -->
       <tr><td>{{ name }}</td><td>{{ cost }}</td></tr>
       {% endfor %}
     </tbody>
   </table>
+
   <p><strong>Budget:</strong> {{ budget }}</p>
 
   <h5>Voter Preferences</h5>
+
+  <!-- Table 2: Voter preferences matrix (voters × projects)
+       Each cell shows ✔ if the voter approved that project, – otherwise -->
   <table class="table table-sm table-bordered">
     <thead class="prob-table">
       <tr>
+        <!-- First column header: voter name -->
         <th>Voter</th>
+        <!-- One column header per project — built dynamically from the projects dict -->
         {% for pname in projects_costs.keys() %}
           <th>{{ pname }}</th>
         {% endfor %}
       </tr>
     </thead>
     <tbody>
+      <!-- One row per voter -->
       {% for voter, ballot in preferences.items() %}
       <tr>
         <td><strong>{{ voter }}</strong></td>
+        <!-- One cell per project: show ✔ if ballot value is 1, – if 0 -->
         {% for pname in projects_costs.keys() %}
           <td>{% if ballot[pname] == 1 %}✔{% else %}–{% endif %}</td>
         {% endfor %}
@@ -51,9 +70,13 @@
   </div>
   {% endif %}
 
-  <!-- columns: one per algorithm run -->
+  <!-- Outer row: one column per algorithm run
+       flex-nowrap    — prevents columns from wrapping to a new line (keeps them side by side)
+       overflow-x:auto — adds a horizontal scrollbar if columns don't fit the screen -->
   <div class="row flex-nowrap" style="overflow-x: auto;">
     {% for run in runs %}
+    <!-- If only one algorithm was run use full width (col-12), otherwise half (col-6)
+         min-width:340px — prevents columns from becoming too narrow to read -->
     <div class="{% if runs|length == 1 %}col-12{% else %}col-6{% endif %}" style="min-width: 340px;">
 
       <div class="content-section">
@@ -61,11 +84,14 @@
 
         <h6>Probability Vector</h6>
         <p class="hint">Each project's probability of being funded in the lottery.</p>
+
+        <!-- Table 3: Probability vector — one row per project -->
         <table class="table table-sm table-bordered prob-table w-auto">
           <thead>
             <tr><th>Project</th><th>Probability</th></tr>
           </thead>
           <tbody>
+            <!-- "%.4f"|format(prob) formats the float to 4 decimal places, e.g. 0.3333 -->
             {% for pname, prob in run.prob_pairs %}
             <tr>
               <td>{{ pname }}</td>
@@ -82,6 +108,15 @@
           {% endfor %}
           <p class="mt-2">
             <strong>Total cost:</strong>
+            <!--
+              Compute the total cost of selected projects:
+              1. .items()                         → [('Park', 10000), ('Library', 15000), ('Roads', 5000)]
+              2. selectattr('0', 'in', run.selected) → keep only pairs whose name (index 0) is in selected
+                                                    → [('Park', 10000), ('Library', 15000)]
+              3. map(attribute='1')               → extract the cost (index 1) from each pair
+                                                    → [10000, 15000]
+              4. sum                              → 25000
+            -->
             {{ run.projects_costs.items() | selectattr('0', 'in', run.selected) | map(attribute='1') | sum }}
             / {{ budget }}
           </p>
@@ -102,20 +137,28 @@
         </div>
 
         <h6 class="mt-3">Per-Voter Satisfaction</h6>
+
+        <!-- Table 4: Per-voter satisfaction — one row per voter
+             Shows which projects each voter approved and which of those were actually selected -->
         <table class="table table-sm table-bordered">
           <thead class="prob-table">
+            <!-- Score column: how many of the voter's approved projects were funded -->
             <tr><th>Voter</th><th>Approved</th><th>Got Funded</th><th>Score</th></tr>
           </thead>
           <tbody>
             {% for voter, ballot in run.preferences.items() %}
+              <!-- Build the list of projects this voter approved (value == 1 in ballot) -->
               {% set approved = [] %}
               {% for pname, v in ballot.items() %}{% if v == 1 %}{% set _ = approved.append(pname) %}{% endif %}{% endfor %}
+              <!-- funded: list of approved projects that were actually selected -->
               {% set funded = run.satisfactions[voter] %}
             <tr>
               <td><strong>{{ voter }}</strong></td>
+              <!-- join(', ') turns a list into a comma-separated string | 'or' shows fallback if empty -->
               <td>{{ approved | join(', ') or '—' }}</td>
               <td>{{ funded | join(', ') or '—' }}</td>
               <td>
+                <!-- Green score if at least one approved project was funded, red otherwise -->
                 {% if funded %}
                   <span class="satisfaction-ok">{{ funded|length }} / {{ approved|length }}</span>
                 {% else %}
@@ -135,6 +178,7 @@
   <hr>
 
   <p>
+    <!-- target="_blank" opens the logs in a new browser tab -->
     <a href="{{ url_for('logs') }}" target="_blank" class="btn btn-outline-secondary btn-sm logs-link">View Algorithm Logs</a>
     &nbsp;
     <a href="{{ url_for('demo') }}" class="btn btn-outline-primary btn-sm">Run Another Example</a>

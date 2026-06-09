@@ -1,25 +1,45 @@
 <!DOCTYPE html>
+<!-- Declares that this is an HTML5 document -->
 <html lang="en">
 <head>
+  <!-- Character encoding — supports all languages and special characters -->
   <meta charset="utf-8">
+  <!-- Makes the page responsive on mobile screens — scales to device width -->
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap 4 CSS — provides the grid system, buttons, cards, alerts, etc. -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <!-- W3.CSS — additional utility styles from W3Schools -->
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+  <!-- Our own custom CSS file (served from the static/ folder) -->
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+
+  <!-- Page title: shows "Demo — Fair Lotteries for PB" if title is set, otherwise just the site name -->
   <title>{% if title %}{{ title }} — {% endif %}Fair Lotteries for PB</title>
 </head>
 <body>
 
+<!-- ── Navigation bar ──────────────────────────────────────────────────── -->
 <header class="site-header">
+  <!-- navbar-expand-md: collapses into a hamburger menu on small screens -->
+  <!-- fixed-top: sticks the navbar to the top of the screen while scrolling -->
   <nav class="navbar navbar-expand-md navbar-dark fixed-top">
     <div class="container">
+      <!-- Site name on the left — clicking it goes to the home page -->
       <a class="navbar-brand mr-4" href="{{ url_for('index') }}">Fair Lotteries for PB</a>
+
+      <!-- Hamburger button — only visible on small screens (mobile) -->
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle">
         <span class="navbar-toggler-icon"></span>
       </button>
+
+      <!-- Navigation links — collapse into the hamburger menu on small screens -->
       <div class="collapse navbar-collapse" id="navbarToggle">
         <div class="navbar-nav mr-auto">
+          <!-- url_for() generates the URL from the function name in routes.py -->
           <a class="nav-item nav-link" href="{{ url_for('index') }}">Home</a>
           <a class="nav-item nav-link" href="{{ url_for('demo') }}">Demo</a>
           <a class="nav-item nav-link" href="{{ url_for('about') }}">About</a>
@@ -29,24 +49,31 @@
   </nav>
 </header>
 
+<!-- ── Main content area ───────────────────────────────────────────────── -->
 <main role="main" class="container">
   <div class="row">
+    <!-- col-md-10 offset-md-1: centers the content at 10/12 width on medium+ screens -->
     <div class="col-md-10 offset-md-1">
 
+      <!-- Flash messages — shown when routes.py calls flash('...', 'danger'/'info'/etc.) -->
+      <!-- with_categories=true gives us the category so we can color the alert correctly -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
+            <!-- alert-danger = red, alert-info = blue, alert-warning = orange -->
             <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
           {% endfor %}
         {% endif %}
       {% endwith %}
 
+      <!-- Each child template fills in its own content here -->
       {% block content %}{% endblock %}
 
     </div>
   </div>
 </main>
 
+<!-- ── JavaScript libraries (required for Bootstrap dropdowns and navbar) ─ -->
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
